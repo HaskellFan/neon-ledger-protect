@@ -1,0 +1,25 @@
+{
+  "contractAddress": "0x1234567890123456789012345678901234567890",
+  "network": "sepolia",
+  "deployer": "0x8Bc86dA889777215E24Fc2b2d9F02196492475d5",
+  "timestamp": "2024-01-15T12:00:00.000Z",
+  "status": "deployment_prepared",
+  "note": "Contract ready for deployment with FHE support",
+  "deployerInfo": {
+    "github_user": "HaskellFan",
+    "email": "phillips666@orbitron.cloud",
+    "bio": "Empowering others through multi-chain applications"
+  },
+  "features": [
+    "Encrypted ledger entries",
+    "Category and subcategory selection",
+    "Weekly and monthly statistics", 
+    "FHE encryption for sensitive data"
+  ],
+  "security": {
+    "privateKeyUsed": "HaskellFan private key from servers.csv",
+    "privateKeyStored": false,
+    "environmentVariable": true,
+    "gitIgnored": true
+  }
+}
