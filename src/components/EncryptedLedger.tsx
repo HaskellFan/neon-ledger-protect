@@ -163,12 +163,12 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         abi: contractABI.abi,
         functionName: 'createLedgerEntry',
         args: [
-          encryptedData.amount,
+          encryptedData.amount, // Already converted in FHEUtils
           timestamp,
-          encryptedData.isIncome,
-          encryptedData.category,
-          encryptedData.subcategory,
-          encryptedData.inputProof
+          encryptedData.isIncome, // Already converted in FHEUtils
+          encryptedData.category, // Already converted in FHEUtils
+          encryptedData.subcategory, // Already converted in FHEUtils
+          encryptedData.inputProof // Already converted in FHEUtils
         ]
       });
 
