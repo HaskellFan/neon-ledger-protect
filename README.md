@@ -98,6 +98,17 @@ npm run preview      # Preview production build
 npm run lint         # Run ESLint
 ```
 
+### Video Compression
+The demo video has been optimized for web delivery:
+```bash
+# Original video: 122MB (ledger-protect.mov)
+# Compressed video: 7.9MB (ledger-protect.mp4)
+# Compression ratio: 93.5% reduction
+
+# Compression command used:
+ffmpeg -i ledger-protect.mov -vcodec libx264 -crf 28 -preset fast -acodec aac -b:a 128k ledger-protect.mp4
+```
+
 ### Project Structure
 ```
 src/
@@ -174,6 +185,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: Check our comprehensive guides
 - **Issues**: Report bugs via GitHub Issues
 - **Community**: Join our developer community
+
+## 🎥 Demo Video
+
+Watch our compressed demo video to see Neon Ledger Protect in action:
+
+[![Neon Ledger Protect Demo](ledger-protect.mp4)](ledger-protect.mp4)
+
+*Video compressed from 122MB to 7.9MB (93.5% reduction) for optimal viewing experience*
 
 ## 🔗 Links
 
