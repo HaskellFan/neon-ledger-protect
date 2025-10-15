@@ -102,6 +102,9 @@ contract NeonLedgerProtect is SepoliaConfig {
         euint8 subcategory
     ) {
         LedgerEntry storage entry = ledgerEntries[entryId];
+        require(entry.owner != address(0), "Entry does not exist");
+        require(entry.owner == msg.sender, "Only entry owner can access encrypted data");
+        
         return (
             entry.amount,
             entry.timestamp,
