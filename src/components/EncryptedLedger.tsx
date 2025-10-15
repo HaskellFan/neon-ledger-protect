@@ -102,6 +102,34 @@ const getEncryptedEntryDataABI = [
     "type": "function"
   }
 ];
+
+// Inline ABI for getEntryInfo function
+const getEntryInfoABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "entryId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getEntryInfo",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { FHEUtils } from '@/lib/fhe-utils';
 import { Lock, Database, Eye, EyeOff, TrendingUp, Calendar, DollarSign } from 'lucide-react';
@@ -289,11 +317,23 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       // Get encrypted data from contract
       const signer = await signerPromise;
       const { Contract } = await import('ethers');
-      console.log('Using inline ABI for getEncryptedEntryData');
-      const contract = new Contract(contractAddress, getEncryptedEntryDataABI, signer);
+      
+      // First check if user owns this entry
+      console.log('Using inline ABI for getEntryInfo');
+      const infoContract = new Contract(contractAddress, getEntryInfoABI, signer);
+      const [owner, blockNumber] = await infoContract.getEntryInfo(entryId);
+      console.log('Entry owner:', owner);
+      console.log('Current user address:', address);
+      console.log('Contract address:', contractAddress);
+      
+      if (owner.toLowerCase() !== address?.toLowerCase()) {
+        throw new Error(`You are not authorized to decrypt this entry. Entry owner: ${owner}, Your address: ${address}`);
+      }
       
       // Get encrypted entry data
-      const [amount, timestamp, isIncome, category, subcategory] = await contract.getEncryptedEntryData(entryId);
+      console.log('Using inline ABI for getEncryptedEntryData');
+      const dataContract = new Contract(contractAddress, getEncryptedEntryDataABI, signer);
+      const [amount, timestamp, isIncome, category, subcategory] = await dataContract.getEncryptedEntryData(entryId);
       
       console.log('Retrieved encrypted data:', { amount, timestamp, isIncome, category, subcategory });
       
