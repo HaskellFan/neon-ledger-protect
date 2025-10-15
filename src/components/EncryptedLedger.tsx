@@ -11,6 +11,54 @@ import { useZamaInstance } from '@/hooks/useZamaInstance';
 
 // Import ABI from artifact file
 import contractABI from '../lib/contractABI.json';
+
+// Inline ABI for createLedgerEntry function
+const createLedgerEntryABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "externalEuint32",
+        "name": "amount",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "externalEuint8",
+        "name": "isIncome",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "externalEuint8",
+        "name": "category",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "externalEuint8",
+        "name": "subcategory",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "inputProof",
+        "type": "bytes"
+      }
+    ],
+    "name": "createLedgerEntry",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { FHEUtils } from '@/lib/fhe-utils';
 import { Lock, Database, Eye, EyeOff, TrendingUp, Calendar, DollarSign } from 'lucide-react';
@@ -167,7 +215,8 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       console.log('Calling contract with direct ethers.js...');
       const signer = await signerPromise;
       const { Contract } = await import('ethers');
-      const contract = new Contract(contractAddress, contractABI.abi, signer);
+      console.log('Using inline ABI for createLedgerEntry');
+      const contract = new Contract(contractAddress, createLedgerEntryABI, signer);
       const tx = await contract.createLedgerEntry(
         encryptedData.amount, // Already converted in FHEUtils
         encryptedData.timestamp, // Use plain timestamp (not encrypted)
