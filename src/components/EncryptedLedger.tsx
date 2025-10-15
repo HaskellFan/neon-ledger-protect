@@ -297,11 +297,53 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       
       console.log('Retrieved encrypted data:', { amount, timestamp, isIncome, category, subcategory });
       
-      // Perform FHE decryption using Zama instance
-      const decryptedAmount = await instance.decrypt(amount, contractAddress);
-      const decryptedIsIncome = await instance.decrypt(isIncome, contractAddress);
-      const decryptedCategory = await instance.decrypt(category, contractAddress);
-      const decryptedSubcategory = await instance.decrypt(subcategory, contractAddress);
+      // Create keypair for decryption
+      console.log('🔑 Generating keypair...');
+      const keypair = instance.generateKeypair();
+      
+      // Prepare handles for decryption
+      const handleContractPairs = [
+        { handle: amount, contractAddress },
+        { handle: isIncome, contractAddress },
+        { handle: category, contractAddress },
+        { handle: subcategory, contractAddress }
+      ];
+      
+      // Create EIP712 signature for decryption
+      const startTimeStamp = Math.floor(Date.now() / 1000).toString();
+      const durationDays = "7";
+      const contractAddresses = [contractAddress];
+      
+      console.log('📝 Creating EIP712 signature...');
+      const eip712 = instance.createEIP712(keypair.publicKey, contractAddresses, startTimeStamp, durationDays);
+      
+      const signature = await signer.signTypedData(
+        eip712.domain,
+        {
+          Decrypt: eip712.types.Decrypt
+        },
+        eip712.message
+      );
+      
+      console.log('🔓 Performing user decryption...');
+      const result = await instance.userDecrypt(
+        handleContractPairs,
+        keypair.privateKey,
+        keypair.publicKey,
+        signature.replace("0x", ""),
+        contractAddresses,
+        address,
+        startTimeStamp,
+        durationDays,
+      );
+      
+      console.log('✅ Decryption result:', result);
+      
+      // Extract decrypted values
+      const decryptedAmount = result[amount];
+      const decryptedIsIncome = result[isIncome];
+      const decryptedCategory = result[category];
+      const decryptedSubcategory = result[subcategory];
       
       console.log('Decrypted values:', {
         amount: decryptedAmount,
@@ -381,11 +423,49 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
           // Get encrypted data from contract
           const [amount, timestamp, isIncome, category, subcategory] = await contract.getEncryptedEntryData(i);
           
+          // Create keypair for decryption
+          const keypair = instance.generateKeypair();
+          
+          // Prepare handles for decryption
+          const handleContractPairs = [
+            { handle: amount, contractAddress },
+            { handle: isIncome, contractAddress },
+            { handle: category, contractAddress },
+            { handle: subcategory, contractAddress }
+          ];
+          
+          // Create EIP712 signature for decryption
+          const startTimeStamp = Math.floor(Date.now() / 1000).toString();
+          const durationDays = "7";
+          const contractAddresses = [contractAddress];
+          
+          const eip712 = instance.createEIP712(keypair.publicKey, contractAddresses, startTimeStamp, durationDays);
+          
+          const signature = await signer.signTypedData(
+            eip712.domain,
+            {
+              Decrypt: eip712.types.Decrypt
+            },
+            eip712.message
+          );
+          
           // Perform FHE decryption using Zama instance
-          const decryptedAmount = await instance.decrypt(amount, contractAddress);
-          const decryptedIsIncome = await instance.decrypt(isIncome, contractAddress);
-          const decryptedCategory = await instance.decrypt(category, contractAddress);
-          const decryptedSubcategory = await instance.decrypt(subcategory, contractAddress);
+          const result = await instance.userDecrypt(
+            handleContractPairs,
+            keypair.privateKey,
+            keypair.publicKey,
+            signature.replace("0x", ""),
+            contractAddresses,
+            address,
+            startTimeStamp,
+            durationDays,
+          );
+          
+          // Extract decrypted values
+          const decryptedAmount = result[amount];
+          const decryptedIsIncome = result[isIncome];
+          const decryptedCategory = result[category];
+          const decryptedSubcategory = result[subcategory];
           
           const decryptedEntry = {
             id: i,
