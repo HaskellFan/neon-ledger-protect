@@ -160,7 +160,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       console.log('Calling writeContractAsync...');
       const result = await writeContractAsync({
         address: contractAddress as `0x${string}`,
-        abi: contractABI.abi,
+        abi: contractABI,
         functionName: 'createLedgerEntry',
         args: [
           encryptedData.amount, // Already converted in FHEUtils
