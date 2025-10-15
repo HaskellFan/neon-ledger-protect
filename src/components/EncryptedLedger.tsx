@@ -581,7 +581,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
     </div>
