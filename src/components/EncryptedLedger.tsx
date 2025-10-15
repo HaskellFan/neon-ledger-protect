@@ -160,7 +160,52 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       console.log('Calling writeContractAsync...');
       const result = await writeContractAsync({
         address: contractAddress as `0x${string}`,
-        abi: contractABI,
+        abi: [
+          {
+            "inputs": [
+              {
+                "internalType": "externalEuint32",
+                "name": "amount",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+              },
+              {
+                "internalType": "externalEuint8",
+                "name": "isIncome",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "externalEuint8",
+                "name": "category",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "externalEuint8",
+                "name": "subcategory",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "inputProof",
+                "type": "bytes"
+              }
+            ],
+            "name": "createLedgerEntry",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }
+        ],
         functionName: 'createLedgerEntry',
         args: [
           encryptedData.amount, // Already converted in FHEUtils
