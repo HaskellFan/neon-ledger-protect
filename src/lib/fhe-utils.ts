@@ -1,21 +1,27 @@
-// Convert FHE handles to hex string format
+// Convert FHE handles to hex string format (确保恰好32字节)
 const convertHex = (handle: any): string => {
   console.log('Converting handle:', handle, 'type:', typeof handle, 'isUint8Array:', handle instanceof Uint8Array);
   
-  let formattedHandle: string;
-  if (typeof handle === 'string') {
-    formattedHandle = handle.startsWith('0x') ? handle : `0x${handle}`;
-  } else if (handle instanceof Uint8Array) {
-    formattedHandle = `0x${Array.from(handle).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+  let hex = '';
+  if (handle instanceof Uint8Array) {
+    hex = `0x${Array.from(handle).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+  } else if (typeof handle === 'string') {
+    hex = handle.startsWith('0x') ? handle : `0x${handle}`;
   } else if (Array.isArray(handle)) {
-    // Handle array format
-    formattedHandle = `0x${handle.map(b => b.toString(16).padStart(2, '0')).join('')}`;
+    hex = `0x${handle.map(b => b.toString(16).padStart(2, '0')).join('')}`;
   } else {
-    formattedHandle = `0x${handle.toString()}`;
+    hex = `0x${handle.toString()}`;
   }
   
-  console.log('Converted handle:', formattedHandle);
-  return formattedHandle;
+  // 确保恰好32字节 (66字符包含0x)
+  if (hex.length < 66) {
+    hex = hex.padEnd(66, '0');
+  } else if (hex.length > 66) {
+    hex = hex.substring(0, 66);
+  }
+  
+  console.log('Converted handle (32 bytes):', hex);
+  return hex;
 };
 
 // FHE utility functions for encrypted data handling
@@ -50,7 +56,7 @@ export class FHEUtils {
       isIncome: convertHex(encryptedInput.handles[2]),
       category: convertHex(encryptedInput.handles[3]),
       subcategory: convertHex(encryptedInput.handles[4]),
-      inputProof: convertHex(encryptedInput.inputProof)
+      inputProof: `0x${Array.from(encryptedInput.inputProof).map(b => b.toString(16).padStart(2, '0')).join('')}`
     };
   }
 

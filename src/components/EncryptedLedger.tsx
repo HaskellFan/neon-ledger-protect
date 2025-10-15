@@ -101,17 +101,17 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
 
       console.log('Encrypted data created:', encryptedData);
 
-             // Prepare contract call with updated ABI
+             // Prepare contract call with correct ABI matching the contract
              const contractCall = {
                address: contractAddress as `0x${string}`,
                abi: [
                  {
                    "inputs": [
-                     {"name": "amount", "type": "bytes"},
-                     {"name": "timestamp", "type": "bytes"},
-                     {"name": "isIncome", "type": "bytes"},
-                     {"name": "category", "type": "bytes"},
-                     {"name": "subcategory", "type": "bytes"},
+                     {"name": "amount", "type": "bytes32"},
+                     {"name": "timestamp", "type": "bytes32"},
+                     {"name": "isIncome", "type": "bytes32"},
+                     {"name": "category", "type": "bytes32"},
+                     {"name": "subcategory", "type": "bytes32"},
                      {"name": "inputProof", "type": "bytes"}
                    ],
                    "name": "createLedgerEntry",
