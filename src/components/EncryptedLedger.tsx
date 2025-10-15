@@ -320,9 +320,9 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       const signature = await signer.signTypedData(
         eip712.domain,
         {
-          Decrypt: eip712.types.Decrypt
+          UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification,
         },
-        eip712.message
+        eip712.message,
       );
       
       console.log('🔓 Performing user decryption...');
@@ -444,9 +444,9 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
           const signature = await signer.signTypedData(
             eip712.domain,
             {
-              Decrypt: eip712.types.Decrypt
+              UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification,
             },
-            eip712.message
+            eip712.message,
           );
           
           // Perform FHE decryption using Zama instance
