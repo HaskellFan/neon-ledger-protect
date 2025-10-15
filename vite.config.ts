@@ -9,6 +9,10 @@ export default defineConfig({
     port: 8080,
   },
   plugins: [react()],
+  define: { global: 'globalThis' },
+  optimizeDeps: { 
+    include: ['@zama-fhe/relayer-sdk/bundle'] 
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

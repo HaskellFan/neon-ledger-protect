@@ -1,104 +1,111 @@
+// @ts-ignore
 import { createPublicClient, http, parseEther } from 'viem';
+// @ts-ignore
 import { sepolia } from 'wagmi/chains';
+// @ts-ignore
+import { createInstance, initSDK, SepoliaConfig } from '@zama-fhe/relayer-sdk/bundle';
 
 // FHE utility functions for encrypted data handling
 export class FHEUtils {
   private static client = createPublicClient({
     chain: sepolia,
-    transport: http(import.meta.env.VITE_RPC_URL || 'https://1rpc.io/sepolia'),
+    transport: http((import.meta as any).env.VITE_RPC_URL || 'https://1rpc.io/sepolia'),
   });
 
-  // Convert regular values to encrypted format for FHE operations
-  static async encryptValue(value: number): Promise<string> {
-    // This would typically interact with the FHE relayer
-    // For now, we'll return a placeholder encrypted value
-    return `encrypted_${value}_${Date.now()}`;
+  private static instance: any = null;
+
+  // Initialize FHE SDK
+  static async initFHE() {
+    if (!this.instance) {
+      try {
+        await initSDK();
+        this.instance = await createInstance(SepoliaConfig);
+      } catch (error) {
+        console.error('FHE initialization failed:', error);
+        throw error;
+      }
+    }
+    return this.instance;
   }
 
-  // Decrypt FHE values (this would be done off-chain in a real implementation)
-  static async decryptValue(encryptedValue: string): Promise<number> {
-    // This would typically interact with the FHE relayer
-    // For now, we'll extract the original value from our placeholder
-    const match = encryptedValue.match(/encrypted_(\d+)_/);
-    return match ? parseInt(match[1]) : 0;
+  // Convert FHE handles to hex string format (32 bytes)
+  static convertHex(handle: any): string {
+    let formattedHandle: string;
+    if (typeof handle === 'string') {
+      formattedHandle = handle.startsWith('0x') ? handle : `0x${handle}`;
+    } else if (handle instanceof Uint8Array) {
+      formattedHandle = `0x${Array.from(handle).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+    } else if (Array.isArray(handle)) {
+      formattedHandle = `0x${handle.map(b => b.toString(16).padStart(2, '0')).join('')}`;
+    } else {
+      formattedHandle = `0x${handle.toString()}`;
+    }
+    
+    // Ensure exactly 32 bytes (66 characters including 0x)
+    if (formattedHandle.length < 66) {
+      formattedHandle = formattedHandle.padEnd(66, '0');
+    } else if (formattedHandle.length > 66) {
+      formattedHandle = formattedHandle.substring(0, 66);
+    }
+    
+    return formattedHandle;
   }
 
   // Create encrypted transaction data
   static async createEncryptedTransaction(
+    contractAddress: string,
+    userAddress: string,
     amount: number,
     isIncome: boolean,
-    description: string
+    category: number,
+    subcategory: number
   ) {
-    const encryptedAmount = await this.encryptValue(amount);
-    const encryptedTimestamp = await this.encryptValue(Date.now());
-    const encryptedIsIncome = await this.encryptValue(isIncome ? 1 : 0);
-
+    const instance = await this.initFHE();
+    const input = instance.createEncryptedInput(contractAddress, userAddress);
+    
+    // Add encrypted values
+    input.add32(BigInt(amount));
+    input.add32(BigInt(Date.now()));
+    input.addBool(isIncome);
+    input.add8(BigInt(category));
+    input.add8(BigInt(subcategory));
+    
+    const encryptedInput = await input.encrypt();
+    
     return {
-      amount: encryptedAmount,
-      timestamp: encryptedTimestamp,
-      isIncome: encryptedIsIncome,
-      description,
+      amount: this.convertHex(encryptedInput.handles[0]),
+      timestamp: this.convertHex(encryptedInput.handles[1]),
+      isIncome: this.convertHex(encryptedInput.handles[2]),
+      category: this.convertHex(encryptedInput.handles[3]),
+      subcategory: this.convertHex(encryptedInput.handles[4]),
+      inputProof: this.convertHex(encryptedInput.inputProof)
     };
   }
 
-  // Generate financial report with encrypted data
-  static async generateEncryptedReport(
-    totalIncome: number,
-    totalExpense: number,
-    netWorth: number,
-    isPrivate: boolean
-  ) {
-    const encryptedIncome = await this.encryptValue(totalIncome);
-    const encryptedExpense = await this.encryptValue(totalExpense);
-    const encryptedNetWorth = await this.encryptValue(netWorth);
-    const encryptedIsPrivate = await this.encryptValue(isPrivate ? 1 : 0);
-
-    return {
-      totalIncome: encryptedIncome,
-      totalExpense: encryptedExpense,
-      netWorth: encryptedNetWorth,
-      isPrivate: encryptedIsPrivate,
-      reportHash: `report_${Date.now()}`,
-    };
+  // Decrypt multiple values
+  static async decryptMultipleValues(handles: string[]): Promise<number[]> {
+    const instance = await this.initFHE();
+    const results = [];
+    for (const handle of handles) {
+      const decrypted = await instance.userDecrypt(handle);
+      results.push(decrypted);
+    }
+    return results;
   }
 
-  // Create protection rule with encrypted threshold
-  static async createEncryptedRule(threshold: number, ruleType: string) {
-    const encryptedThreshold = await this.encryptValue(threshold);
-
+  // Get category definitions
+  static getCategories() {
     return {
-      threshold: encryptedThreshold,
-      ruleType,
+      0: { name: "Food & Dining", subcategories: ["Restaurant", "Groceries", "Coffee", "Fast Food", "Delivery"] },
+      1: { name: "Transportation", subcategories: ["Gas", "Public Transit", "Taxi", "Parking", "Maintenance"] },
+      2: { name: "Shopping", subcategories: ["Clothing", "Electronics", "Books", "Gifts", "Other"] },
+      3: { name: "Entertainment", subcategories: ["Movies", "Games", "Sports", "Music", "Events"] },
+      4: { name: "Health & Fitness", subcategories: ["Medical", "Pharmacy", "Gym", "Insurance", "Wellness"] },
+      5: { name: "Bills & Utilities", subcategories: ["Electricity", "Water", "Internet", "Phone", "Rent"] },
+      6: { name: "Education", subcategories: ["Tuition", "Books", "Courses", "Supplies", "Other"] },
+      7: { name: "Travel", subcategories: ["Flights", "Hotels", "Activities", "Food", "Transport"] },
+      8: { name: "Income", subcategories: ["Salary", "Freelance", "Investment", "Gift", "Other"] },
+      9: { name: "Other", subcategories: ["Miscellaneous", "Donations", "Fees", "Taxes", "Other"] }
     };
-  }
-
-  // Check if value exceeds encrypted threshold
-  static async checkThreshold(value: number, encryptedThreshold: string): Promise<boolean> {
-    const threshold = await this.decryptValue(encryptedThreshold);
-    return value > threshold;
   }
 }
-
-// Contract interaction utilities
-export const contractUtils = {
-  // Get contract address from environment
-  getContractAddress: (): string => {
-    return import.meta.env.VITE_CONTRACT_ADDRESS || '';
-  },
-
-  // Get FHE relayer URL
-  getRelayerUrl: (): string => {
-    return import.meta.env.VITE_FHE_RELAYER_URL || '';
-  },
-
-  // Format address for display
-  formatAddress: (address: string): string => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  },
-
-  // Validate Ethereum address
-  isValidAddress: (address: string): boolean => {
-    return /^0x[a-fA-F0-9]{40}$/.test(address);
-  },
-};
