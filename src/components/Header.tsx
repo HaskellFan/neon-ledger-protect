@@ -18,11 +18,11 @@ export const Header = () => {
           {/* Logo & Title */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-neon-cyan to-neon-green rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
                 <img 
-                  src="/src/assets/payroll-logo.png" 
-                  alt="Payroll Logo" 
-                  className="w-8 h-8 object-contain filter brightness-0 invert"
+                  src="/logo.svg" 
+                  alt="Neon Ledger Protect Logo" 
+                  className="w-8 h-8 object-contain"
                 />
               </div>
               <div>
