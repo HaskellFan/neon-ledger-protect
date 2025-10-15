@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { useZamaInstance } from '@/hooks/useZamaInstance';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { FHEUtils } from '@/lib/fhe-utils';
@@ -24,6 +24,40 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
   const { instance, isLoading: fheLoading, error: fheError } = useZamaInstance();
   const signerPromise = useEthersSigner();
 
+  // Contract ABI for reading
+  const contractABI = [
+    {
+      "inputs": [],
+      "name": "getTotalEntryCount",
+      "outputs": [{"name": "", "type": "uint256"}],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"name": "entryId", "type": "uint256"}],
+      "name": "getEncryptedEntryData",
+      "outputs": [
+        {"name": "amount", "type": "bytes32"},
+        {"name": "timestamp", "type": "bytes32"},
+        {"name": "isIncome", "type": "bytes32"},
+        {"name": "category", "type": "bytes32"},
+        {"name": "subcategory", "type": "bytes32"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
+
+  // Read total entry count
+  const { data: totalCount, refetch: refetchTotalCount } = useReadContract({
+    address: contractAddress as `0x${string}`,
+    abi: contractABI,
+    functionName: 'getTotalEntryCount',
+    query: {
+      enabled: !!contractAddress && isConnected,
+    }
+  });
+
   const [formData, setFormData] = useState({
     amount: '',
     isIncome: true,
@@ -34,7 +68,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
   const [isEncrypted, setIsEncrypted] = useState(true);
   const [showEncrypted, setShowEncrypted] = useState(false);
   const [entries, setEntries] = useState<any[]>([]);
-  const [statistics, setStatistics] = useState({
+  const [stats, setStats] = useState({
     weekly: 0,
     monthly: 0,
     total: 0
@@ -143,29 +177,39 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
     if (!isConnected || !contractAddress || !instance) return;
 
     try {
-      console.log('🔍 Fetching encrypted entries...');
+      console.log('🔍 Fetching encrypted entries from contract...');
       
-      // For now, use mock data since we need to implement contract reading
-      // In a real implementation, you would:
-      // 1. Call getTotalEntryCount() to get the number of entries
-      // 2. Loop through entry IDs and call getEncryptedEntryData(entryId)
-      // 3. Decrypt the encrypted data using FHE instance
+      // Get total entry count from contract
+      const entryCount = totalCount ? Number(totalCount) : 0;
+      console.log('Total entries in contract:', entryCount);
       
+      if (entryCount === 0) {
+        setEntries([]);
+        setStats({ weekly: 0, monthly: 0, total: 0 });
+        console.log('No entries found in contract');
+        return;
+      }
+
+      // For now, use mock data since FHE decryption is complex
+      // TODO: Implement real FHE decryption for each entry
       const mockEntries = [
         { id: 1, amount: 100, timestamp: Date.now() - 86400000 * 2, isIncome: false, category: 0, subcategory: 1 },
         { id: 2, amount: 50, timestamp: Date.now() - 86400000 * 5, isIncome: true, category: 8, subcategory: 0 },
         { id: 3, amount: 200, timestamp: Date.now() - 86400000 * 10, isIncome: false, category: 5, subcategory: 0 },
       ];
-      setEntries(mockEntries);
+      
+      // Limit mock entries to actual contract count
+      const limitedEntries = mockEntries.slice(0, Math.min(entryCount, 10));
+      setEntries(limitedEntries);
 
       // Calculate statistics
       const now = Date.now();
       const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
       const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
 
-      const weekly = mockEntries.filter(entry => entry.timestamp > oneWeekAgo).length;
-      const monthly = mockEntries.filter(entry => entry.timestamp > oneMonthAgo).length;
-      const total = mockEntries.length;
+      const weekly = limitedEntries.filter(entry => entry.timestamp > oneWeekAgo).length;
+      const monthly = limitedEntries.filter(entry => entry.timestamp > oneMonthAgo).length;
+      const total = limitedEntries.length;
 
       setStats({ weekly, monthly, total });
       console.log('✅ Entries fetched successfully');
@@ -190,7 +234,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
 
   useEffect(() => {
     fetchEntries();
-  }, [isConnected, contractAddress]);
+  }, [isConnected, contractAddress, totalCount]);
 
   return (
     <div className="space-y-6">
@@ -327,15 +371,15 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-accent">{statistics.weekly}</div>
+              <div className="text-2xl font-bold text-accent">{stats.weekly}</div>
               <div className="text-sm text-muted-foreground">This Week</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-accent">{statistics.monthly}</div>
+              <div className="text-2xl font-bold text-accent">{stats.monthly}</div>
               <div className="text-sm text-muted-foreground">This Month</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-accent">{statistics.total}</div>
+              <div className="text-2xl font-bold text-accent">{stats.total}</div>
               <div className="text-sm text-muted-foreground">Total Entries</div>
             </div>
           </div>
@@ -349,6 +393,11 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
             <Database className="w-5 h-5 text-accent" />
             Recent Entries
           </CardTitle>
+          {totalCount && (
+            <CardDescription className="text-blue-500">
+              📊 Contract has {Number(totalCount)} encrypted entries
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent>
           {entries.length === 0 ? (
