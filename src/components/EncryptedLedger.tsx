@@ -109,7 +109,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
                    "inputs": [
                      {"name": "amount", "type": "bytes"},
                      {"name": "timestamp", "type": "bytes"},
-                     {"name": "isIncome", "type": "bool"},
+                     {"name": "isIncome", "type": "bytes"},
                      {"name": "category", "type": "bytes"},
                      {"name": "subcategory", "type": "bytes"},
                      {"name": "inputProof", "type": "bytes"}
