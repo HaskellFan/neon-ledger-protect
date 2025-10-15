@@ -9,7 +9,7 @@ contract NeonLedgerProtect is SepoliaConfig {
     
     struct LedgerEntry {
         euint32 amount;
-        euint32 timestamp;
+        uint256 timestamp;
         euint8 isIncome;
         euint8 category;
         euint8 subcategory;
@@ -96,8 +96,8 @@ contract NeonLedgerProtect is SepoliaConfig {
     // Get encrypted entry data for decryption
     function getEncryptedEntryData(uint256 entryId) public view returns (
         euint32 amount,
-        euint32 timestamp,
-        ebool isIncome,
+        uint256 timestamp,
+        euint8 isIncome,
         euint8 category,
         euint8 subcategory
     ) {
