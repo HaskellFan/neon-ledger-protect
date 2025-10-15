@@ -279,8 +279,16 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
           </Button>
 
           {fheError && (
-            <div className="text-red-500 text-sm">
-              FHE Error: {fheError}
+            <div className="text-red-500 text-sm space-y-2">
+              <div>FHE Error: {fheError}</div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                className="text-xs"
+              >
+                Retry FHE Initialization
+              </Button>
             </div>
           )}
 

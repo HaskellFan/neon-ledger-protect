@@ -8,22 +8,40 @@ export function useZamaInstance() {
 
   useEffect(() => {
     let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     const initZama = async () => {
       try {
         setIsLoading(true);
         setError(null);
+        
+        console.log('Initializing FHE SDK...');
         await initSDK();
+        console.log('FHE SDK initialized successfully');
 
+        console.log('Creating Zama instance...');
         const zamaInstance = await createInstance(SepoliaConfig);
+        console.log('Zama instance created successfully');
 
         if (mounted) {
           setInstance(zamaInstance);
         }
       } catch (err) {
         console.error('Failed to initialize Zama instance:', err);
-        if (mounted) {
-          setError('Failed to initialize encryption service');
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retrying FHE initialization (${retryCount}/${maxRetries})...`);
+          setTimeout(() => {
+            if (mounted) {
+              initZama();
+            }
+          }, 2000 * retryCount); // 递增延迟
+        } else {
+          if (mounted) {
+            setError('Failed to initialize encryption service after multiple attempts');
+          }
         }
       } finally {
         if (mounted) {
