@@ -59,6 +59,49 @@ const createLedgerEntryABI = [
     "type": "function"
   }
 ];
+
+// Inline ABI for getEncryptedEntryData function
+const getEncryptedEntryDataABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "entryId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getEncryptedEntryData",
+    "outputs": [
+      {
+        "internalType": "euint32",
+        "name": "amount",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "euint8",
+        "name": "isIncome",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "euint8",
+        "name": "category",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "euint8",
+        "name": "subcategory",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { FHEUtils } from '@/lib/fhe-utils';
 import { Lock, Database, Eye, EyeOff, TrendingUp, Calendar, DollarSign } from 'lucide-react';
@@ -246,7 +289,8 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       // Get encrypted data from contract
       const signer = await signerPromise;
       const { Contract } = await import('ethers');
-      const contract = new Contract(contractAddress, contractABI.abi, signer);
+      console.log('Using inline ABI for getEncryptedEntryData');
+      const contract = new Contract(contractAddress, getEncryptedEntryDataABI, signer);
       
       // Get encrypted entry data
       const [amount, timestamp, isIncome, category, subcategory] = await contract.getEncryptedEntryData(entryId);
@@ -326,7 +370,8 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       // Get signer and contract for decryption
       const signer = await signerPromise;
       const { Contract } = await import('ethers');
-      const contract = new Contract(contractAddress, contractABI.abi, signer);
+      console.log('Using inline ABI for getEncryptedEntryData in decryptAllEntries');
+      const contract = new Contract(contractAddress, getEncryptedEntryDataABI, signer);
       
       // Decrypt all entries using real FHE decryption
       for (let i = 0; i < Math.min(entryCount, 10); i++) {
