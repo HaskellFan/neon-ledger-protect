@@ -63,6 +63,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
     isIncome: true,
     category: '',
     subcategory: '',
+    date: new Date().toISOString().split('T')[0], // Default to today
   });
 
   const [isEncrypted, setIsEncrypted] = useState(true);
@@ -150,6 +151,9 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         parseInt(formData.subcategory)
       );
 
+      // Convert date to timestamp
+      const timestamp = Math.floor(new Date(formData.date).getTime() / 1000);
+
       console.log('Encrypted data created:', encryptedData);
 
              // Prepare contract call with correct ABI matching the contract
@@ -159,7 +163,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
                  {
                    "inputs": [
                      {"name": "amount", "type": "bytes32"},
-                     {"name": "timestamp", "type": "bytes32"},
+                     {"name": "timestamp", "type": "uint256"},
                      {"name": "isIncome", "type": "bytes32"},
                      {"name": "category", "type": "bytes32"},
                      {"name": "subcategory", "type": "bytes32"},
@@ -174,7 +178,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
                functionName: 'createLedgerEntry',
                args: [
                  encryptedData.amount,
-                 encryptedData.timestamp,
+                 timestamp,
                  encryptedData.isIncome,
                  encryptedData.category,
                  encryptedData.subcategory,
@@ -364,14 +368,24 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
                 onChange={(e) => handleInputChange('amount', e.target.value)}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="isIncome">Income</Label>
-              <Switch
-                id="isIncome"
-                checked={formData.isIncome}
-                onCheckedChange={(checked) => handleInputChange('isIncome', checked)}
+            <div>
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
               />
             </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="isIncome">Income</Label>
+            <Switch
+              id="isIncome"
+              checked={formData.isIncome}
+              onCheckedChange={(checked) => handleInputChange('isIncome', checked)}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -10,7 +10,7 @@ contract NeonLedgerProtect is SepoliaConfig {
     struct LedgerEntry {
         euint32 amount;
         euint32 timestamp;
-        ebool isIncome;
+        euint8 isIncome;
         euint8 category;
         euint8 subcategory;
         address owner;
@@ -34,8 +34,8 @@ contract NeonLedgerProtect is SepoliaConfig {
     
     function createLedgerEntry(
         externalEuint32 amount,
-        externalEuint32 timestamp,
-        ebool isIncome,
+        uint256 timestamp,
+        externalEuint8 isIncome,
         externalEuint8 category,
         externalEuint8 subcategory,
         bytes calldata inputProof
@@ -44,14 +44,14 @@ contract NeonLedgerProtect is SepoliaConfig {
         
         // Convert external encrypted values to internal
         euint32 internalAmount = FHE.fromExternal(amount, inputProof);
-        euint32 internalTimestamp = FHE.fromExternal(timestamp, inputProof);
+        euint8 internalIsIncome = FHE.fromExternal(isIncome, inputProof);
         euint8 internalCategory = FHE.fromExternal(category, inputProof);
         euint8 internalSubcategory = FHE.fromExternal(subcategory, inputProof);
         
         ledgerEntries[entryId] = LedgerEntry({
             amount: internalAmount,
-            timestamp: internalTimestamp,
-            isIncome: isIncome,
+            timestamp: timestamp,
+            isIncome: internalIsIncome,
             category: internalCategory,
             subcategory: internalSubcategory,
             owner: msg.sender,

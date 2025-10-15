@@ -32,12 +32,10 @@ export class FHEUtils {
   ) {
     console.log('Creating encrypted transaction with instance:', !!instance);
     
-    // Create encrypted input with all transaction data
+    // Create encrypted input with transaction data (excluding timestamp)
     const input = instance.createEncryptedInput(contractAddress, userAddress);
     input.add32(BigInt(amount));
-    // Use seconds timestamp instead of milliseconds to fit in 32-bit integer
-    input.add32(BigInt(Math.floor(Date.now() / 1000)));
-    input.addBool(isIncome);
+    input.add8(BigInt(isIncome ? 1 : 0)); // Convert boolean to 0/1 for add8
     input.add8(BigInt(category));
     input.add8(BigInt(subcategory));
 
@@ -46,10 +44,9 @@ export class FHEUtils {
 
     return {
       amount: convertHex(encryptedInput.handles[0]),
-      timestamp: convertHex(encryptedInput.handles[1]),
-      isIncome: convertHex(encryptedInput.handles[2]),
-      category: convertHex(encryptedInput.handles[3]),
-      subcategory: convertHex(encryptedInput.handles[4]),
+      isIncome: convertHex(encryptedInput.handles[1]),
+      category: convertHex(encryptedInput.handles[2]),
+      subcategory: convertHex(encryptedInput.handles[3]),
       inputProof: convertHex(encryptedInput.inputProof)
     };
   }
