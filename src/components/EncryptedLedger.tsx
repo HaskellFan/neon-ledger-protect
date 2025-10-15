@@ -83,8 +83,14 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         return;
       }
 
+      console.log('Starting createEncryptedEntry...');
+      console.log('Instance:', !!instance);
+      console.log('Address:', address);
+      console.log('SignerPromise:', !!signerPromise);
+
       // Create encrypted transaction data using real FHE
       const encryptedData = await FHEUtils.createEncryptedTransaction(
+        instance,
         contractAddress,
         address,
         amount,
@@ -92,6 +98,8 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         parseInt(formData.category),
         parseInt(formData.subcategory)
       );
+
+      console.log('Encrypted data created:', encryptedData);
 
       // Prepare contract call
       const contractCall = {
@@ -123,6 +131,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         ]
       };
 
+      console.log('Calling writeContract with:', contractCall);
       await writeContract(contractCall);
     } catch (err) {
       console.error('Error creating encrypted entry:', err);

@@ -1,58 +1,28 @@
-// @ts-ignore
-import { createPublicClient, http, parseEther } from 'viem';
-// @ts-ignore
-import { sepolia } from 'wagmi/chains';
-// @ts-ignore
-import { createInstance, initSDK, SepoliaConfig } from '@zama-fhe/relayer-sdk/bundle';
+// Convert FHE handles to hex string format
+const convertHex = (handle: any): string => {
+  console.log('Converting handle:', handle, 'type:', typeof handle, 'isUint8Array:', handle instanceof Uint8Array);
+  
+  let formattedHandle: string;
+  if (typeof handle === 'string') {
+    formattedHandle = handle.startsWith('0x') ? handle : `0x${handle}`;
+  } else if (handle instanceof Uint8Array) {
+    formattedHandle = `0x${Array.from(handle).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+  } else if (Array.isArray(handle)) {
+    // Handle array format
+    formattedHandle = `0x${handle.map(b => b.toString(16).padStart(2, '0')).join('')}`;
+  } else {
+    formattedHandle = `0x${handle.toString()}`;
+  }
+  
+  console.log('Converted handle:', formattedHandle);
+  return formattedHandle;
+};
 
 // FHE utility functions for encrypted data handling
 export class FHEUtils {
-  private static client = createPublicClient({
-    chain: sepolia,
-    transport: http((import.meta as any).env.VITE_RPC_URL || 'https://1rpc.io/sepolia'),
-  });
-
-  private static instance: any = null;
-
-  // Initialize FHE SDK
-  static async initFHE() {
-    if (!this.instance) {
-      try {
-        await initSDK();
-        this.instance = await createInstance(SepoliaConfig);
-      } catch (error) {
-        console.error('FHE initialization failed:', error);
-        throw error;
-      }
-    }
-    return this.instance;
-  }
-
-  // Convert FHE handles to hex string format (32 bytes)
-  static convertHex(handle: any): string {
-    let formattedHandle: string;
-    if (typeof handle === 'string') {
-      formattedHandle = handle.startsWith('0x') ? handle : `0x${handle}`;
-    } else if (handle instanceof Uint8Array) {
-      formattedHandle = `0x${Array.from(handle).map(b => b.toString(16).padStart(2, '0')).join('')}`;
-    } else if (Array.isArray(handle)) {
-      formattedHandle = `0x${handle.map(b => b.toString(16).padStart(2, '0')).join('')}`;
-    } else {
-      formattedHandle = `0x${handle.toString()}`;
-    }
-    
-    // Ensure exactly 32 bytes (66 characters including 0x)
-    if (formattedHandle.length < 66) {
-      formattedHandle = formattedHandle.padEnd(66, '0');
-    } else if (formattedHandle.length > 66) {
-      formattedHandle = formattedHandle.substring(0, 66);
-    }
-    
-    return formattedHandle;
-  }
-
   // Create encrypted transaction data
   static async createEncryptedTransaction(
+    instance: any,
     contractAddress: string,
     userAddress: string,
     amount: number,
@@ -60,40 +30,29 @@ export class FHEUtils {
     category: number,
     subcategory: number
   ) {
-    const instance = await this.initFHE();
-    const input = instance.createEncryptedInput(contractAddress, userAddress);
+    console.log('Creating encrypted transaction with instance:', !!instance);
     
-    // Add encrypted values
+    // Create encrypted input with all transaction data
+    const input = instance.createEncryptedInput(contractAddress, userAddress);
     input.add32(BigInt(amount));
-    input.add32(BigInt(Date.now()));
+    input.add32(BigInt(Date.now())); // Timestamp as euint32
     input.addBool(isIncome);
     input.add8(BigInt(category));
     input.add8(BigInt(subcategory));
-    
+
     const encryptedInput = await input.encrypt();
-    
+    console.log('Encryption successful, handles:', encryptedInput.handles.length);
+
     return {
-      amount: this.convertHex(encryptedInput.handles[0]),
-      timestamp: this.convertHex(encryptedInput.handles[1]),
-      isIncome: this.convertHex(encryptedInput.handles[2]),
-      category: this.convertHex(encryptedInput.handles[3]),
-      subcategory: this.convertHex(encryptedInput.handles[4]),
-      inputProof: this.convertHex(encryptedInput.inputProof)
+      amount: convertHex(encryptedInput.handles[0]),
+      timestamp: convertHex(encryptedInput.handles[1]),
+      isIncome: convertHex(encryptedInput.handles[2]),
+      category: convertHex(encryptedInput.handles[3]),
+      subcategory: convertHex(encryptedInput.handles[4]),
+      inputProof: convertHex(encryptedInput.inputProof)
     };
   }
 
-  // Decrypt multiple values
-  static async decryptMultipleValues(handles: string[]): Promise<number[]> {
-    const instance = await this.initFHE();
-    const results = [];
-    for (const handle of handles) {
-      const decrypted = await instance.userDecrypt(handle);
-      results.push(decrypted);
-    }
-    return results;
-  }
-
-  // Get category definitions
   static getCategories() {
     return {
       0: { name: "Food & Dining", subcategories: ["Restaurant", "Groceries", "Coffee", "Fast Food", "Delivery"] },
