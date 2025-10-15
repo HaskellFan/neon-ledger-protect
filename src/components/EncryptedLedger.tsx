@@ -243,17 +243,37 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       setIsDecrypting(true);
       console.log(`🔓 Decrypting entry ${entryId}...`);
       
-      // Simulate FHE decryption process for specific entry
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate decryption time
+      // Get encrypted data from contract
+      const signer = await signerPromise;
+      const { Contract } = await import('ethers');
+      const contract = new Contract(contractAddress, contractABI.abi, signer);
       
-      // Create decrypted entry based on your actual submission
+      // Get encrypted entry data
+      const [amount, timestamp, isIncome, category, subcategory] = await contract.getEncryptedEntryData(entryId);
+      
+      console.log('Retrieved encrypted data:', { amount, timestamp, isIncome, category, subcategory });
+      
+      // Perform FHE decryption using Zama instance
+      const decryptedAmount = await instance.decrypt(amount, contractAddress);
+      const decryptedIsIncome = await instance.decrypt(isIncome, contractAddress);
+      const decryptedCategory = await instance.decrypt(category, contractAddress);
+      const decryptedSubcategory = await instance.decrypt(subcategory, contractAddress);
+      
+      console.log('Decrypted values:', {
+        amount: decryptedAmount,
+        isIncome: decryptedIsIncome,
+        category: decryptedCategory,
+        subcategory: decryptedSubcategory
+      });
+      
+      // Create decrypted entry with real decrypted data
       const decryptedEntry = {
         id: entryId,
-        amount: 100, // Your actual amount (this would come from FHE decryption)
-        timestamp: Date.now() - entryId * 86400000, // Your actual timestamp
-        isIncome: true, // Your actual income/expense flag
-        category: 8, // Your actual category (Income)
-        subcategory: 0, // Your actual subcategory
+        amount: Number(decryptedAmount),
+        timestamp: Number(timestamp), // timestamp is not encrypted
+        isIncome: Number(decryptedIsIncome) === 1,
+        category: Number(decryptedCategory),
+        subcategory: Number(decryptedSubcategory),
         decrypted: true,
         note: 'Decrypted from FHE encrypted data'
       };
@@ -303,26 +323,42 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
 
       const decryptedData = [];
       
-      // Decrypt all entries
+      // Get signer and contract for decryption
+      const signer = await signerPromise;
+      const { Contract } = await import('ethers');
+      const contract = new Contract(contractAddress, contractABI.abi, signer);
+      
+      // Decrypt all entries using real FHE decryption
       for (let i = 0; i < Math.min(entryCount, 10); i++) {
         console.log(`🔓 Decrypting entry ${i}...`);
         
-        // Simulate FHE decryption process
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate decryption time
-        
-        const decryptedEntry = {
-          id: i,
-          amount: 100 + i * 50, // Mock decrypted amount
-          timestamp: Date.now() - i * 86400000, // Mock timestamp
-          isIncome: i % 2 === 0, // Mock income/expense
-          category: i % 10, // Mock category
-          subcategory: i % 5, // Mock subcategory
-          decrypted: true,
-          note: 'Decrypted from FHE encrypted data'
-        };
-        
-        decryptedData.push(decryptedEntry);
-        console.log(`✅ Entry ${i} decrypted:`, decryptedEntry);
+        try {
+          // Get encrypted data from contract
+          const [amount, timestamp, isIncome, category, subcategory] = await contract.getEncryptedEntryData(i);
+          
+          // Perform FHE decryption using Zama instance
+          const decryptedAmount = await instance.decrypt(amount, contractAddress);
+          const decryptedIsIncome = await instance.decrypt(isIncome, contractAddress);
+          const decryptedCategory = await instance.decrypt(category, contractAddress);
+          const decryptedSubcategory = await instance.decrypt(subcategory, contractAddress);
+          
+          const decryptedEntry = {
+            id: i,
+            amount: Number(decryptedAmount),
+            timestamp: Number(timestamp), // timestamp is not encrypted
+            isIncome: Number(decryptedIsIncome) === 1,
+            category: Number(decryptedCategory),
+            subcategory: Number(decryptedSubcategory),
+            decrypted: true,
+            note: 'Decrypted from FHE encrypted data'
+          };
+          
+          decryptedData.push(decryptedEntry);
+          console.log(`✅ Entry ${i} decrypted:`, decryptedEntry);
+        } catch (entryError) {
+          console.error(`❌ Failed to decrypt entry ${i}:`, entryError);
+          // Continue with other entries
+        }
       }
 
       setDecryptedEntries(decryptedData);
