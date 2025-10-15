@@ -6,8 +6,10 @@ export default defineConfig({
   server: {
     host: "::",
     port: 8080,
-    // Remove CORS headers that conflict with Coinbase Wallet
-    // The FHE SDK will work without these headers in development
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
+    }
   },
   plugins: [react()],
   resolve: {

@@ -35,7 +35,8 @@ export class FHEUtils {
     // Create encrypted input with all transaction data
     const input = instance.createEncryptedInput(contractAddress, userAddress);
     input.add32(BigInt(amount));
-    input.add32(BigInt(Date.now())); // Timestamp as euint32
+    // Use seconds timestamp instead of milliseconds to fit in 32-bit integer
+    input.add32(BigInt(Math.floor(Date.now() / 1000)));
     input.addBool(isIncome);
     input.add8(BigInt(category));
     input.add8(BigInt(subcategory));
