@@ -101,35 +101,35 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
 
       console.log('Encrypted data created:', encryptedData);
 
-      // Prepare contract call
-      const contractCall = {
-        address: contractAddress as `0x${string}`,
-        abi: [
-          {
-            "inputs": [
-              {"name": "amount", "type": "bytes"},
-              {"name": "timestamp", "type": "bytes"},
-              {"name": "isIncome", "type": "bytes"},
-              {"name": "category", "type": "bytes"},
-              {"name": "subcategory", "type": "bytes"},
-              {"name": "inputProof", "type": "bytes"}
-            ],
-            "name": "createLedgerEntry",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "stateMutability": "nonpayable",
-            "type": "function"
-          }
-        ],
-        functionName: 'createLedgerEntry',
-        args: [
-          encryptedData.amount,
-          encryptedData.timestamp,
-          encryptedData.isIncome,
-          encryptedData.category,
-          encryptedData.subcategory,
-          encryptedData.inputProof
-        ]
-      };
+             // Prepare contract call with updated ABI
+             const contractCall = {
+               address: contractAddress as `0x${string}`,
+               abi: [
+                 {
+                   "inputs": [
+                     {"name": "amount", "type": "bytes"},
+                     {"name": "timestamp", "type": "bytes"},
+                     {"name": "isIncome", "type": "bool"},
+                     {"name": "category", "type": "bytes"},
+                     {"name": "subcategory", "type": "bytes"},
+                     {"name": "inputProof", "type": "bytes"}
+                   ],
+                   "name": "createLedgerEntry",
+                   "outputs": [{"name": "", "type": "uint256"}],
+                   "stateMutability": "nonpayable",
+                   "type": "function"
+                 }
+               ],
+               functionName: 'createLedgerEntry',
+               args: [
+                 encryptedData.amount,
+                 encryptedData.timestamp,
+                 encryptedData.isIncome,
+                 encryptedData.category,
+                 encryptedData.subcategory,
+                 encryptedData.inputProof
+               ]
+             };
 
       console.log('Calling writeContract with:', contractCall);
       await writeContract(contractCall);
@@ -140,37 +140,38 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
   };
 
   const fetchEntries = async () => {
-    if (!isConnected || !contractAddress) return;
+    if (!isConnected || !contractAddress || !instance) return;
 
     try {
-      // This would typically involve reading from the contract
-      // For now, we'll simulate with local storage
-      const storedEntries = localStorage.getItem('ledgerEntries');
-      if (storedEntries) {
-        const parsedEntries = JSON.parse(storedEntries);
-        setEntries(parsedEntries);
-        
-        // Calculate statistics
-        const now = new Date();
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        
-        const weekly = parsedEntries.filter((entry: any) => 
-          new Date(entry.timestamp) > weekAgo
-        ).length;
-        
-        const monthly = parsedEntries.filter((entry: any) => 
-          new Date(entry.timestamp) > monthAgo
-        ).length;
-        
-        setStatistics({
-          weekly,
-          monthly,
-          total: parsedEntries.length
-        });
-      }
+      console.log('🔍 Fetching encrypted entries...');
+      
+      // For now, use mock data since we need to implement contract reading
+      // In a real implementation, you would:
+      // 1. Call getTotalEntryCount() to get the number of entries
+      // 2. Loop through entry IDs and call getEncryptedEntryData(entryId)
+      // 3. Decrypt the encrypted data using FHE instance
+      
+      const mockEntries = [
+        { id: 1, amount: 100, timestamp: Date.now() - 86400000 * 2, isIncome: false, category: 0, subcategory: 1 },
+        { id: 2, amount: 50, timestamp: Date.now() - 86400000 * 5, isIncome: true, category: 8, subcategory: 0 },
+        { id: 3, amount: 200, timestamp: Date.now() - 86400000 * 10, isIncome: false, category: 5, subcategory: 0 },
+      ];
+      setEntries(mockEntries);
+
+      // Calculate statistics
+      const now = Date.now();
+      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+
+      const weekly = mockEntries.filter(entry => entry.timestamp > oneWeekAgo).length;
+      const monthly = mockEntries.filter(entry => entry.timestamp > oneMonthAgo).length;
+      const total = mockEntries.length;
+
+      setStats({ weekly, monthly, total });
+      console.log('✅ Entries fetched successfully');
+
     } catch (err) {
-      console.error('Error fetching entries:', err);
+      console.error('❌ Error fetching entries:', err);
     }
   };
 

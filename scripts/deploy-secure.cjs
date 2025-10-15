@@ -1,6 +1,7 @@
 const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 // 从环境变量获取私钥
 const PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY;

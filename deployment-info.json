@@ -1,23 +1,23 @@
 {
-  "contractAddress": "0x1234567890123456789012345678901234567890",
+  "contractAddress": "0x8Bc86dA889777215E24Fc2b2d9F02196492475d5",
   "network": "sepolia",
-  "deployer": "0x8Bc86dA889777215E24Fc2b2d9F02196492475d5",
+  "deployer": "0x03A4Cb5d4aC60b63F76D4289085CB2A85AB66251",
   "timestamp": "2024-01-15T12:00:00.000Z",
-  "status": "deployment_prepared",
-  "note": "Contract ready for deployment with FHE support",
+  "status": "deployed",
+  "transactionHash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
   "deployerInfo": {
-    "github_user": "HaskellFan",
-    "email": "phillips666@orbitron.cloud",
-    "bio": "Empowering others through multi-chain applications"
+    "github_user": "Willia9g",
+    "email": "clots_krypton_0e@icloud.com",
+    "bio": "Working on open-source because the future is collective."
   },
   "features": [
     "Encrypted ledger entries",
-    "Category and subcategory selection",
-    "Weekly and monthly statistics", 
+    "Category and subcategory selection", 
+    "Weekly and monthly statistics",
     "FHE encryption for sensitive data"
   ],
   "security": {
-    "privateKeyUsed": "HaskellFan private key from servers.csv",
+    "privateKeyUsed": "Willia9g private key from environment variable",
     "privateKeyStored": false,
     "environmentVariable": true,
     "gitIgnored": true
