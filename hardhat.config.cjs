@@ -20,9 +20,12 @@ module.exports = {
       chainId: 31337,
     },
     sepolia: {
-      url: "https://ethereum-sepolia-rpc.publicnode.com",
-      accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : [],
+      url: "https://sepolia.drpc.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 11155111,
+      timeout: 60000,
+      gas: "auto",
+      gasPrice: "auto",
     },
   },
   etherscan: {

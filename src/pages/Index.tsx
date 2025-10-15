@@ -35,7 +35,7 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            <EncryptedLedger contractAddress="0x5FbDB2315678afecb367f032d93F642f64180aa3" />
+            <EncryptedLedger contractAddress="0xb926d9296e1fFFEc01073DCFa357fbd6Cf7119fA" />
           </div>
         ) : (
           <div className="text-center py-12">

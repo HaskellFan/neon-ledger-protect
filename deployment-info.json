@@ -1,11 +1,11 @@
 {
-  "contractAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  "network": "hardhat",
-  "chainId": "31337",
-  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "timestamp": "2025-10-15T08:36:57.574Z",
+  "contractAddress": "0xb926d9296e1fFFEc01073DCFa357fbd6Cf7119fA",
+  "network": "sepolia",
+  "chainId": "11155111",
+  "deployer": "0x8Bc86dA889777215E24Fc2b2d9F02196492475d5",
+  "timestamp": "2025-10-15T08:52:50.961Z",
   "status": "deployed",
-  "transactionHash": "0xaaeb83756c4e951cb6fa1b2a3762ddf3c7d7f584bb5e627e9d342b9ba74f6f20",
+  "transactionHash": "0xc335341bc0d0a5710a484b03ae735f1e173bba66ef689e1093bf5337ba6e16df",
   "deployerInfo": {
     "github_user": "Willia9g",
     "email": "clots_krypton_0e@icloud.com",
