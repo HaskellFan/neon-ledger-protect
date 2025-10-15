@@ -342,12 +342,16 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       const keypair = instance.generateKeypair();
       
       // Prepare handles for decryption
+      console.log('Raw handles from contract:', { amount, isIncome, category, subcategory });
+      
       const handleContractPairs = [
         { handle: amount, contractAddress },
         { handle: isIncome, contractAddress },
         { handle: category, contractAddress },
         { handle: subcategory, contractAddress }
       ];
+      
+      console.log('Handle contract pairs:', handleContractPairs);
       
       // Create EIP712 signature for decryption
       const startTimeStamp = Math.floor(Date.now() / 1000).toString();
@@ -364,6 +368,16 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
         },
         eip712.message,
       );
+      
+      console.log('🔓 Decryption parameters:', {
+        handleContractPairs,
+        keypair: { publicKey: keypair.publicKey, privateKey: keypair.privateKey },
+        signature: signature.replace("0x", ""),
+        contractAddresses,
+        userAddress: address,
+        startTimeStamp,
+        durationDays
+      });
       
       console.log('🔓 Performing user decryption...');
       const result = await instance.userDecrypt(
