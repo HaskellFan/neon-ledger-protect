@@ -56,7 +56,7 @@ export class FHEUtils {
       isIncome: convertHex(encryptedInput.handles[2]),
       category: convertHex(encryptedInput.handles[3]),
       subcategory: convertHex(encryptedInput.handles[4]),
-      inputProof: `0x${Array.from(encryptedInput.inputProof).map(b => b.toString(16).padStart(2, '0')).join('')}`
+      inputProof: convertHex(encryptedInput.inputProof)
     };
   }
 
