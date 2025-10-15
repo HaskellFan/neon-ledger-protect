@@ -1,11 +1,11 @@
 {
-  "contractAddress": "0xb926d9296e1fFFEc01073DCFa357fbd6Cf7119fA",
+  "contractAddress": "0x37a9317f785C251900D2376c6b0439705143cFE9",
   "network": "sepolia",
   "chainId": "11155111",
   "deployer": "0x8Bc86dA889777215E24Fc2b2d9F02196492475d5",
-  "timestamp": "2025-10-15T08:52:50.961Z",
+  "timestamp": "2025-10-15T08:57:14.304Z",
   "status": "deployed",
-  "transactionHash": "0xc335341bc0d0a5710a484b03ae735f1e173bba66ef689e1093bf5337ba6e16df",
+  "transactionHash": "0x50470f60055544aa75e53f33887dbecc1257215551b93b29fd1a98242435db80",
   "deployerInfo": {
     "github_user": "Willia9g",
     "email": "clots_krypton_0e@icloud.com",

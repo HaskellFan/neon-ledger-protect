@@ -61,7 +61,12 @@ contract NeonLedgerProtect is SepoliaConfig {
         // Update user balance based on income/expense
         // For FHE, we need to handle this differently - store both income and expense separately
         // This is a simplified approach for the ledger system
-        userBalance[msg.sender] = FHE.add(userBalance[msg.sender], internalAmount);
+        // Initialize balance to 0 if it's the first entry for this user
+        if (userEntryCount[msg.sender] == 0) {
+            userBalance[msg.sender] = internalAmount;
+        } else {
+            userBalance[msg.sender] = FHE.add(userBalance[msg.sender], internalAmount);
+        }
         
         // Update entry count
         userEntryCount[msg.sender]++;
