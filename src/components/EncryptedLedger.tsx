@@ -164,20 +164,21 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
 
       console.log('Encrypted data created:', encryptedData);
 
-      console.log('Calling contract with writeContractAsync...');
-      const result = await writeContractAsync({
-        address: contractAddress as `0x${string}`,
-        abi: contractABI.abi,
-        functionName: 'createLedgerEntry',
-        args: [
-          encryptedData.amount, // Already converted in FHEUtils
-          encryptedData.timestamp, // Use plain timestamp (not encrypted)
-          encryptedData.isIncome, // Already converted in FHEUtils
-          encryptedData.category, // Already converted in FHEUtils
-          encryptedData.subcategory, // Already converted in FHEUtils
-          encryptedData.inputProof // Already converted in FHEUtils
-        ]
-      });
+      console.log('Calling contract with direct ethers.js...');
+      const signer = await signerPromise;
+      const { Contract } = await import('ethers');
+      const contract = new Contract(contractAddress, contractABI.abi, signer);
+      const tx = await contract.createLedgerEntry(
+        encryptedData.amount, // Already converted in FHEUtils
+        encryptedData.timestamp, // Use plain timestamp (not encrypted)
+        encryptedData.isIncome, // Already converted in FHEUtils
+        encryptedData.category, // Already converted in FHEUtils
+        encryptedData.subcategory, // Already converted in FHEUtils
+        encryptedData.inputProof // Already converted in FHEUtils
+      );
+      
+      await tx.wait();
+      const result = tx.hash;
 
       console.log('writeContractAsync result:', result);
     } catch (err) {
