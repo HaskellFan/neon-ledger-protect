@@ -26,15 +26,17 @@ export class FHEUtils {
     contractAddress: string,
     userAddress: string,
     amount: number,
+    timestamp: number,
     isIncome: boolean,
     category: number,
     subcategory: number
   ) {
     console.log('Creating encrypted transaction with instance:', !!instance);
     
-    // Create encrypted input with transaction data (excluding timestamp)
+    // Create encrypted input with transaction data (excluding timestamp - it's not encrypted)
     const input = instance.createEncryptedInput(contractAddress, userAddress);
     input.add32(BigInt(amount));
+    // timestamp is NOT encrypted - it's passed as plain uint256 to contract
     input.add8(BigInt(isIncome ? 1 : 0)); // Convert boolean to 0/1 for add8
     input.add8(BigInt(category));
     input.add8(BigInt(subcategory));
@@ -44,6 +46,7 @@ export class FHEUtils {
 
     return {
       amount: convertHex(encryptedInput.handles[0]),
+      timestamp: timestamp, // Return plain timestamp (not encrypted)
       isIncome: convertHex(encryptedInput.handles[1]),
       category: convertHex(encryptedInput.handles[2]),
       subcategory: convertHex(encryptedInput.handles[3]),

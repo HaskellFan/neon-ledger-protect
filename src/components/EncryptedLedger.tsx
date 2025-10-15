@@ -147,19 +147,20 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       console.log('Address:', address);
       console.log('SignerPromise:', !!signerPromise);
 
+      // Convert date to timestamp
+      const timestamp = Math.floor(new Date(formData.date).getTime() / 1000);
+
       // Create encrypted transaction data using real FHE
       const encryptedData = await FHEUtils.createEncryptedTransaction(
         instance,
         contractAddress,
         address,
         amount,
+        timestamp,
         formData.isIncome,
         parseInt(formData.category),
         parseInt(formData.subcategory)
       );
-
-      // Convert date to timestamp
-      const timestamp = Math.floor(new Date(formData.date).getTime() / 1000);
 
       console.log('Encrypted data created:', encryptedData);
 
@@ -169,7 +170,7 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
       const contract = new Contract(contractAddress, contractABI.abi, signer);
       const tx = await contract.createLedgerEntry(
         encryptedData.amount, // Already converted in FHEUtils
-        timestamp,
+        encryptedData.timestamp, // Use plain timestamp (not encrypted)
         encryptedData.isIncome, // Already converted in FHEUtils
         encryptedData.category, // Already converted in FHEUtils
         encryptedData.subcategory, // Already converted in FHEUtils
