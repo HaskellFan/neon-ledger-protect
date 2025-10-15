@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
+import contractABI from '../lib/contractABI.json';
 import { useZamaInstance } from '@/hooks/useZamaInstance';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { FHEUtils } from '@/lib/fhe-utils';
@@ -17,7 +18,7 @@ interface EncryptedLedgerProps {
 
 export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddress }) => {
   const { address, isConnected } = useAccount();
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { writeContractAsync, data: hash, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
@@ -156,38 +157,22 @@ export const EncryptedLedger: React.FC<EncryptedLedgerProps> = ({ contractAddres
 
       console.log('Encrypted data created:', encryptedData);
 
-             // Prepare contract call with correct ABI matching the contract
-             const contractCall = {
-               address: contractAddress as `0x${string}`,
-               abi: [
-                 {
-                   "inputs": [
-                     {"name": "amount", "type": "bytes32"},
-                     {"name": "timestamp", "type": "uint256"},
-                     {"name": "isIncome", "type": "bytes32"},
-                     {"name": "category", "type": "bytes32"},
-                     {"name": "subcategory", "type": "bytes32"},
-                     {"name": "inputProof", "type": "bytes"}
-                   ],
-                   "name": "createLedgerEntry",
-                   "outputs": [{"name": "", "type": "uint256"}],
-                   "stateMutability": "nonpayable",
-                   "type": "function"
-                 }
-               ],
-               functionName: 'createLedgerEntry',
-               args: [
-                 encryptedData.amount,
-                 timestamp,
-                 encryptedData.isIncome,
-                 encryptedData.category,
-                 encryptedData.subcategory,
-                 encryptedData.inputProof
-               ]
-             };
+      console.log('Calling writeContractAsync...');
+      const result = await writeContractAsync({
+        address: contractAddress as `0x${string}`,
+        abi: contractABI.abi,
+        functionName: 'createLedgerEntry',
+        args: [
+          encryptedData.amount,
+          timestamp,
+          encryptedData.isIncome,
+          encryptedData.category,
+          encryptedData.subcategory,
+          encryptedData.inputProof
+        ]
+      });
 
-      console.log('Calling writeContract with:', contractCall);
-      await writeContract(contractCall);
+      console.log('writeContractAsync result:', result);
     } catch (err) {
       console.error('Error creating encrypted entry:', err);
       alert('Failed to create encrypted entry');
